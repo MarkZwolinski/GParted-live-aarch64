@@ -87,7 +87,10 @@ done
 2. Create a new VM: **Other ARM 64-bit**
 3. Point the CD/DVD drive at the ISO
 4. Ensure firmware is **UEFI** (not BIOS)
-5. Boot — the GRUB menu appears, then GParted launches automatically
+5. Apply the recommended settings below before first boot
+6. Boot — the GRUB menu appears, the squashfs loads into RAM, then GParted launches automatically
+
+Tested and working on VMware Fusion (Apple Silicon, macOS). GParted opens and displays the virtual disk ready for use.
 
 ## VMware Fusion recommended settings
 
