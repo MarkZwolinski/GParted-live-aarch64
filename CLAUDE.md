@@ -79,6 +79,20 @@ Transfer `output/gparted-live-YYYYMMDD-arm64.iso` to a Mac with VMware Fusion on
 - Create new VM → Other ARM → point to the ISO
 - Firmware: UEFI (not BIOS)
 - The ISO has only `EFI/BOOT/BOOTAA64.EFI` — no BIOS fallback
+- Set VM RAM to **2048 MB or higher** — the ISO boots with `toram`, which copies the squashfs into RAM before mounting it (requires ~500–700 MB on top of the running system)
+
+## Known compatibility fixes
+
+These issues have been diagnosed and fixed; documented here so the fixes aren't accidentally reverted.
+
+| Fix | Where | Reason |
+|-----|-------|--------|
+| `--bootstrap mmdebstrap` removed | `lb config` | Flag dropped in live-build 20250814 |
+| `reiserfsprogs` removed from package list | `PKGLIST` | Package dropped from Debian Sid |
+| `xinit` added to package list | `PKGLIST` | xorg only recommends it; needed for `startx` |
+| Stub `/etc/profile.d/zz-xinit.sh` added as chroot include | `config/includes.chroot/` | Modern live-config no longer ships it; without it `S03prep-gparted-live` skips adding `startx` to `.bash_profile` |
+| `zz-fix-grub-cfg.binary` hook | `config/hooks/live/` | `gparted-efi-misc-binary-hook` renames the kernel to unversioned `vmlinuz` but grub.cfg retains the versioned name; hook patches grub.cfg after the rename |
+| `toram` in `--bootappend-live` | `lb config` | libparted probes `/dev/sr0` (the live CD) at GParted startup, causing an intermittent empty-window hang; `toram` copies the squashfs into RAM at boot so the CD is freed before GParted runs |
 
 ## Modifying the package list
 
