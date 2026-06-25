@@ -112,28 +112,6 @@ These can be changed in **VM → Settings** or by editing the `.vmx` file direct
 
 To edit the `.vmx` directly, locate it at `~/Virtual Machines/<name>.vmwarevm/<name>.vmx`, make the changes in a text editor, then open the VM in Fusion.
 
-## Troubleshooting
-
-### GParted hangs on boot
-
-If GParted freezes after the live CD boots and you cannot switch focus to any other window, minimise the GParted window first. Once minimised, focus should be restored.
-
-Open a terminal and find the hung process:
-
-```bash
-ps -ef | grep gparted
-```
-
-There may be one or two instances of `sudo gparted` in the output. Kill the first one (the one with the lowest PID):
-
-```bash
-kill -9 <PID>
-```
-
-It is not known whether having two instances is normal or whether they interfere with each other. Killing the first instance should be sufficient to restore the desktop.
-
-You should then be able to relaunch GParted normally from the desktop or menu.
-
 ## How it works
 
 GParted Live is built with Debian's `live-build` tool, which bootstraps a Debian Sid arm64 system, installs packages, runs customization hooks, and produces a bootable ISO. The build runs entirely inside a `debian:sid` container.
