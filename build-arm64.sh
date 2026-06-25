@@ -3,8 +3,10 @@
 # Usage: ./build-arm64.sh [--use-cache]
 #
 # Supports:
-#   macOS Apple Silicon  — Docker Desktop or OrbStack (runs as current user, no sudo)
-#   Linux aarch64        — podman (runs via sudo for loop-mount access)
+#   macOS Apple Silicon       — Docker Desktop or OrbStack (no sudo, no SELinux :z)
+#   Linux with Docker Engine  — Ubuntu and other non-SELinux distros (no sudo if user
+#                               is in the docker group; no :z volume label)
+#   Linux with podman         — RHEL/Fedora (sudo podman; :z for SELinux relabeling)
 #
 # Output: output/gparted-live-<date>-arm64.iso
 
@@ -28,12 +30,12 @@ mkdir -p "$SCRIPT_DIR/lb-cache"
 
 # Detect OS and pick the right container runner.
 #
-# macOS  — Docker Desktop (or OrbStack) runs arm64 containers natively on Apple Silicon.
-#          No sudo needed; Docker Desktop's daemon handles privilege internally.
-#          No :z volume label (that's a Linux SELinux annotation).
+# macOS / Linux+Docker  — Docker daemon handles privilege internally; no sudo needed
+#                         (on Linux, user must be in the docker group).
+#                         No :z volume label — that's an SELinux-only annotation.
 #
-# Linux  — podman needs sudo so live-build can create loop mounts inside the container.
-#          :z relabels the volume for SELinux (harmless if SELinux is permissive/disabled).
+# Linux+podman          — sudo required so live-build can create loop mounts.
+#                         :z relabels the volume for SELinux (RHEL/Fedora).
 if [ "$(uname)" = "Darwin" ]; then
   if ! command -v docker &>/dev/null; then
     echo "ERROR: Docker Desktop (or OrbStack) is required on macOS."
@@ -43,9 +45,16 @@ if [ "$(uname)" = "Darwin" ]; then
   RUNNER="docker"
   VOL_OPTS=(-v "$SCRIPT_DIR:/build")
   SUDO=""
+elif command -v docker &>/dev/null; then
+  # Linux with Docker Engine (Ubuntu, Debian, etc.)
+  # Runs without sudo if the current user is in the docker group.
+  RUNNER="docker"
+  VOL_OPTS=(-v "$SCRIPT_DIR:/build")
+  SUDO=""
 else
+  # Linux with podman (RHEL, Fedora)
   if ! command -v podman &>/dev/null; then
-    echo "ERROR: podman is required on Linux."
+    echo "ERROR: docker or podman is required on Linux."
     exit 1
   fi
   RUNNER="podman"

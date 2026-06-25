@@ -1,5 +1,17 @@
 # GParted Live arm64
 
+> ## ⚠ EXPERIMENTAL SOFTWARE — USE AT YOUR OWN RISK
+>
+> This is an **unofficial, experimental** aarch64 port of GParted Live. It is **not** affiliated with, endorsed by, or supported by the GParted project or the Debian project.
+>
+> **Neither the repository owner nor Claude (Anthropic) accept any liability for data loss, disk corruption, or any other damage arising from the use of this software.**
+>
+> This build has been compiled and tested on macOS only (MacBook Pro M4, VMware Fusion). Behaviour on other platforms is untested.
+>
+> **You are very strongly advised to make a full backup of any virtual disk before attaching it to a VM running this ISO. Partition management tools can cause irreversible data loss if used incorrectly or if they malfunction.**
+>
+> By using this software you accept these risks entirely.
+
 An aarch64 port of [GParted Live](https://gparted.org/livecd.php) — the bootable disk partition management ISO. The official release is amd64-only; this project builds an equivalent ISO that boots on arm64 hardware and VMs.
 
 **Target:** VMware Fusion on Apple Silicon (M1/M2/M3 Mac), UTM, or any UEFI arm64 VM host.
@@ -14,11 +26,21 @@ Install **one** of:
 
 `git` and `bash` are already present on macOS. If `git` is missing, run `xcode-select --install`.
 
-### Linux aarch64 (RHEL / Fedora)
+### Linux aarch64 — Ubuntu / Debian
+
+Install Docker Engine and add your user to the `docker` group:
+
+```bash
+sudo apt-get install docker.io
+sudo usermod -aG docker $USER
+newgrp docker   # or log out and back in
+```
+
+### Linux aarch64 — RHEL / Fedora
 
 - `podman` — the build runs via `sudo podman` so live-build can create loop mounts inside the container
 
-Both platforms pull `debian:sid` from Docker Hub and run it as a native arm64 container. All other build tools (`live-build`, `debootstrap`, etc.) are installed automatically inside the container.
+All platforms pull `debian:sid` from Docker Hub and run it as a native arm64 container. All other build tools (`live-build`, `debootstrap`, etc.) are installed automatically inside the container.
 
 ## Quick start
 
@@ -48,9 +70,9 @@ Subsequent builds reuse the package cache:
 ./build-arm64.sh --use-cache
 ```
 
-## DNS workaround (Linux only — if podman can't reach Docker Hub)
+## DNS workaround (RHEL/Fedora only — if podman can't reach Docker Hub)
 
-On some Linux hosts, Go-based tools (including podman) fail to resolve Docker Hub hostnames even when the network is otherwise reachable. This does not affect macOS (Docker Desktop uses its own DNS). Fix by adding the IPs to `/etc/hosts`:
+On some RHEL hosts, Go-based tools (including podman) fail to resolve Docker Hub hostnames even when the network is otherwise reachable. This does not affect macOS or Ubuntu (Docker Engine uses its own DNS resolver). Fix by adding the IPs to `/etc/hosts`:
 
 ```bash
 for host in registry-1.docker.io auth.docker.io production.cloudfront.docker.com; do
