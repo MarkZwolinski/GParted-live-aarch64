@@ -101,11 +101,13 @@ Open a terminal and find the hung process:
 ps -ef | grep gparted
 ```
 
-Identify the first instance of `sudo gparted` in the output and note its PID. Kill it:
+There may be one or two instances of `sudo gparted` in the output. Kill the first one (the one with the lowest PID):
 
 ```bash
 kill -9 <PID>
 ```
+
+It is not known whether having two instances is normal or whether they interfere with each other. Killing the first instance should be sufficient to restore the desktop.
 
 You should then be able to relaunch GParted normally from the desktop or menu.
 
