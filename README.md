@@ -112,6 +112,18 @@ These can be changed in **VM → Settings** or by editing the `.vmx` file direct
 
 To edit the `.vmx` directly, locate it at `~/Virtual Machines/<name>.vmwarevm/<name>.vmx`, make the changes in a text editor, then open the VM in Fusion.
 
+### Virtual disk size
+
+GParted needs at least one block device to probe at startup — without one it hangs. A **1–2 GB** virtual disk is sufficient; GParted can create, resize, and delete partitions on it just as well as on a larger disk.
+
+If the disk is thin-provisioned (Fusion's default), the `.vmdk` file on the host only consumes space proportional to data actually written, so an oversized disk costs little. You can verify with:
+
+```bash
+ls -lh ~/Virtual\ Machines/GParted\ Live.vmwarevm/Virtual\ Disk.vmdk
+```
+
+A result of a few MB confirms thin provisioning and that resizing is not necessary.
+
 ## How it works
 
 GParted Live is built with Debian's `live-build` tool, which bootstraps a Debian Sid arm64 system, installs packages, runs customization hooks, and produces a bootable ISO. The build runs entirely inside a `debian:sid` container.
