@@ -89,6 +89,26 @@ done
 4. Ensure firmware is **UEFI** (not BIOS)
 5. Boot — the GRUB menu appears, then GParted launches automatically
 
+## Troubleshooting
+
+### GParted hangs on boot
+
+If GParted freezes after the live CD boots and you cannot switch focus to any other window, minimise the GParted window first. Once minimised, focus should be restored.
+
+Open a terminal and find the hung process:
+
+```bash
+ps -ef | grep gparted
+```
+
+Identify the first instance of `sudo gparted` in the output and note its PID. Kill it:
+
+```bash
+kill -9 <PID>
+```
+
+You should then be able to relaunch GParted normally from the desktop or menu.
+
 ## How it works
 
 GParted Live is built with Debian's `live-build` tool, which bootstraps a Debian Sid arm64 system, installs packages, runs customization hooks, and produces a bootable ISO. The build runs entirely inside a `debian:sid` container.
