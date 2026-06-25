@@ -58,10 +58,12 @@ echo "=== [inner] Preparing build directory ==="
 rm -rf "$WORK_DIR"
 mkdir -p "$WORK_DIR"
 
-# Optionally restore lb cache from a previous run to avoid re-downloading packages
-if [ -d "$CACHE_DIR/cache" ]; then
+# Optionally restore lb cache from a previous run to avoid re-downloading packages.
+# Stored as a tar archive so the macOS bind mount only sees a plain file (cp -a fails
+# across Docker's virtiofs layer due to ownership and hard-link restrictions).
+if [ -f "$CACHE_DIR/lb-cache.tar" ]; then
   echo "Restoring lb cache..."
-  cp -a "$CACHE_DIR/cache" "$WORK_DIR/cache"
+  tar -C "$WORK_DIR" -xf "$CACHE_DIR/lb-cache.tar"
 fi
 
 cd "$WORK_DIR"
@@ -329,8 +331,8 @@ echo "ISO created: $ISO_DEST ($(du -sh "$ISO_DEST" | cut -f1))"
 
 echo "=== [inner] Saving lb cache ==="
 if [ -d "$WORK_DIR/cache" ]; then
-  rm -rf "$CACHE_DIR/cache"
-  cp -a "$WORK_DIR/cache" "$CACHE_DIR/cache"
+  rm -f "$CACHE_DIR/lb-cache.tar"
+  tar -C "$WORK_DIR" -cf "$CACHE_DIR/lb-cache.tar" cache
 fi
 
 echo "=== [inner] Done ==="
