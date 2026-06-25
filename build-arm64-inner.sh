@@ -87,7 +87,7 @@ lb config \
   --security false \
   --updates false \
   --initramfs live-boot \
-  --bootappend-live "boot=live union=overlay config username=user" \
+  --bootappend-live "boot=live union=overlay config username=user toram" \
   --cache-indices true \
   --cache-packages false \
   --apt-indices false \
