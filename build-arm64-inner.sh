@@ -35,7 +35,6 @@ apt-get update -q
 apt-get install -y --no-install-recommends \
   live-build \
   debootstrap \
-  mmdebstrap \
   xorriso \
   binutils \
   xz-utils \
@@ -102,7 +101,6 @@ lb config \
   --source false \
   --initsystem systemd \
   --debootstrap-options "${DEBOOTSTRAP_OPTIONS} --variant=minbase" \
-  --bootstrap mmdebstrap \
   --parent-mirror-bootstrap "$DEBIAN_MIRROR" \
   --parent-mirror-binary "$DEBIAN_MIRROR" \
   --parent-mirror-chroot "$DEBIAN_MIRROR" \
@@ -225,7 +223,6 @@ hfsutils
 jfsutils
 xfsprogs
 xfsdump
-reiserfsprogs
 btrfs-progs
 parted
 ntfs-3g
@@ -239,6 +236,7 @@ kpartx
 exfatprogs
 util-linux-extra
 xorg
+xinit
 xserver-xorg-legacy
 fonts-arphic-uming
 fonts-hanazono
@@ -246,7 +244,14 @@ PKGLIST
 
 echo "=== [inner] Setting up chroot includes and hooks ==="
 mkdir -p config/includes.chroot/live-hook-dir
+mkdir -p config/includes.chroot/etc/profile.d
 mkdir -p config/hooks/live
+
+# S03prep-gparted-live checks for zz-xinit.sh at boot time: if the file exists but
+# doesn't contain 'startx', it appends 'sudo startx' to the autologin user's
+# .bash_profile. Modern live-config no longer ships zz-xinit.sh, so the check
+# silently falls through and X never starts. Create a stub to trigger the right path.
+touch config/includes.chroot/etc/profile.d/zz-xinit.sh
 
 # OCS live-hook functions and config (needed by gparted-live-hook at chroot time)
 cp -pr "$OCS_LIVE_HOOK_SRC/." config/includes.chroot/live-hook-dir/
@@ -275,6 +280,19 @@ chmod 755 config/hooks/live/gparted-live-hook.chroot
 cp "$GPARTED_LIVE_HOOK_SRC/live-hook/gparted-efi-misc-binary-hook" \
    config/hooks/live/gparted-efi-misc-binary-hook.binary
 chmod 755 config/hooks/live/gparted-efi-misc-binary-hook.binary
+
+# After the rename hook strips version suffixes from vmlinuz/initrd,
+# grub.cfg still has the old versioned paths. Patch them to match.
+cat > config/hooks/live/zz-fix-grub-cfg.binary << 'GRUBFIX'
+#!/bin/bash
+set -e
+for cfg in boot/grub/grub.cfg boot/grub/arm64-efi/grub.cfg; do
+  [ -f "$cfg" ] || continue
+  sed -i 's|/live/vmlinuz-[^[:space:]]*|/live/vmlinuz|g' "$cfg"
+  sed -i 's|/live/initrd\.img-[^[:space:]]*|/live/initrd.img|g' "$cfg"
+done
+GRUBFIX
+chmod 755 config/hooks/live/zz-fix-grub-cfg.binary
 
 echo "=== [inner] Setting up DRBL APT repository ==="
 mkdir -p config/archives
