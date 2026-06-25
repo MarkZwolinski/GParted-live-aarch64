@@ -89,6 +89,29 @@ done
 4. Ensure firmware is **UEFI** (not BIOS)
 5. Boot — the GRUB menu appears, then GParted launches automatically
 
+## VMware Fusion recommended settings
+
+After creating the VM but **before booting it**, open **VM → Settings** and apply the changes below. VMware Fusion may start the VM automatically at the end of the creation wizard — if it does, shut it down before making these changes.
+
+### Memory — required
+
+| Setting | Value | Why |
+|---------|-------|-----|
+| Memory | **2048 MB** (minimum) | The ISO boots with `toram`, which copies the squashfs (~500–700 MB) into RAM before mounting it. 768 MB (the Fusion default) leaves the running system with almost no free memory. |
+
+### Settings that reduce host footprint
+
+These can be changed in **VM → Settings** or by editing the `.vmx` file directly (the VM must be shut down first):
+
+| Setting | VMX key | Recommended value | Why |
+|---------|---------|-------------------|-----|
+| Sound | `sound.present` | `FALSE` | GParted has no audio; the virtual sound device wastes resources |
+| Video memory | `svga.vramSize` | `16777216` (16 MB) | The default 256 MB is far more than a 2D fluxbox desktop needs; frees ~240 MB of host RAM |
+| VMware Tools time sync | `tools.syncTime` | `FALSE` | VMware Tools is not installed in GParted Live; the sync attempts achieve nothing |
+| VMware Tools upgrade | `tools.upgrade.policy` | `manual` | Same reason |
+
+To edit the `.vmx` directly, locate it at `~/Virtual Machines/<name>.vmwarevm/<name>.vmx`, make the changes in a text editor, then open the VM in Fusion.
+
 ## Troubleshooting
 
 ### GParted hangs on boot
